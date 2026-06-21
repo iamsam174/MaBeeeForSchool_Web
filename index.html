@@ -96,4 +96,411 @@
                         <h2 class="text-sm font-bold text-slate-400">［タイマー秒数設定］ <span class="text-xs text-slate-500">（キーボード［←］［→］で1秒ずつ微調整）</span></h2>
                         <span id="timer-val" class="text-xl font-mono font-bold text-amber-400">5 秒</span>
                     </div>
-                    <input id="slider-timer" type="range" min="1" max="180" step="1" value="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500
+                    <input id="slider-timer" type="range" min="1" max="180" step="1" value="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
+                    <div class="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>1秒</span>
+                        <span>90秒</span>
+                        <span>180秒</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h2 class="text-sm font-bold text-slate-400 mb-1">［ボタンサイズ切替］</h2>
+                        <select id="select-size" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none text-sm">
+                            <option value="size-xl" selected>特大（画面の約80%）</option>
+                            <option value="size-l">大</option>
+                            <option value="size-m">中</option>
+                            <option value="size-s">小</option>
+                        </select>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h2 class="text-sm font-bold text-slate-400 mb-1">［音の切替］</h2>
+                        <select id="select-sound" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none text-sm">
+                            <option value="sound-a" selected>電子音（ピコーン）</option>
+                            <option value="sound-b">ファンファーレ</option>
+                            <option value="sound-none">なし</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-5 flex flex-col justify-between gap-4 h-full">
+                
+                <div class="flex-1 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative flex items-center justify-center min-h-[140px]">
+                    <video id="webcam-in" class="absolute inset-0 w-full h-full object-cover scale-x-[-1]" autoplay playsinline muted></video>
+                    <div id="placeholder-in" class="text-center text-slate-500 p-2 z-10">
+                        <span class="text-2xl block mb-1">👁️</span>
+                        <p class="text-xs">［インカメラ］起動時に自分の顔が表示されます<br>（視線シミュレーション用）</p>
+                    </div>
+                </div>
+
+                <div class="flex-1 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative flex items-center justify-center min-h-[140px]">
+                    <video id="webcam-out" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
+                    <div id="placeholder-out" class="text-center text-slate-500 p-2 z-10">
+                        <span class="text-2xl block mb-1">📹</span>
+                        <p class="text-xs">［外付けWebカメラ］起動時に乾電池式オモチャなどが表示されます<br>（ボタンの背景になります）</p>
+                    </div>
+                </div>
+
+                <button id="btn-start" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 text-xl font-black py-4 rounded-xl transition-all shadow-xl active:scale-[0.98] shrink-0">
+                    🚀 スタート（実行画面へ）
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+
+    <div id="screen-run" class="fixed inset-0 min-h-screen hidden bg-slate-950">
+        
+        <div id="mabeee-target" class="draggable absolute bg-slate-800 border-4 border-slate-700 hover:border-teal-400 rounded-3xl flex flex-col justify-center items-center p-6 cursor-move shadow-2xl transition-colors duration-150 select-none overflow-hidden">
+            <video id="run-webcam" class="target-video hidden" autoplay playsinline muted></video>
+            
+            <span id="target-icon" class="pointer-events-none text-6xl mb-4 z-10 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)]">🤖</span>
+            <span id="target-text" class="pointer-events-none text-3xl font-black tracking-widest text-slate-200 z-10 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)]">マビーON</span>
+        </div>
+
+        <div class="absolute bottom-6 left-6 z-50">
+            <button id="btn-gaze-toggle" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base">
+                <span id="gaze-status-icon">👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>
+            </button>
+        </div>
+
+        <div class="absolute bottom-6 right-6 z-50">
+            <button id="btn-back" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold px-6 py-3 rounded-xl shadow-lg border border-slate-700 transition-all active:scale-95 text-base">
+                ↩ 設定に戻る
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(type) {
+            const selectSound = document.getElementById('select-sound').value;
+            if (selectSound === 'sound-none') return;
+            
+            if (type === 'start') {
+                if (selectSound === 'sound-a') {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                } else if (selectSound === 'sound-b') {
+                    [440, 554, 659, 880].forEach((freq, idx) => {
+                        let osc = audioCtx.createOscillator();
+                        let gain = audioCtx.createGain();
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.08 + 0.2);
+                        osc.connect(gain); gain.connect(audioCtx.destination);
+                        osc.start(audioCtx.currentTime + idx * 0.08);
+                        osc.stop(audioCtx.currentTime + idx * 0.08 + 0.2);
+                    });
+                }
+            } else if (type === 'stop') {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            }
+        }
+    </script>
+
+    <script>
+        let appMode = 1; 
+        let timerSeconds = 5;
+        let isGazeEnabled = true;
+        let isOutputActive = false;
+        let outputTimeout = null;
+        let countdownInterval = null;
+        
+        let streamIn = null;
+        let streamOut = null;
+        
+        const MABEEE_SERVICE_UUID = '0000aaa0-0000-1000-8000-00805f9b34fb';
+        const MABEEE_CHAR_UUID    = '0000aaa1-0000-1000-8000-00805f9b34fb';
+        let mabeeeCharacteristic = null;
+
+        const scrLauncher = document.getElementById('screen-launcher');
+        const scrRun = document.getElementById('screen-run');
+        const sliderTimer = document.getElementById('slider-timer');
+        const timerVal = document.getElementById('timer-val');
+        const selectSize = document.getElementById('select-size');
+        
+        const videoIn = document.getElementById('webcam-in');
+        const videoOut = document.getElementById('webcam-out');
+        const videoRun = document.getElementById('run-webcam');
+        
+        const placeholderIn = document.getElementById('placeholder-in');
+        const placeholderOut = document.getElementById('placeholder-out');
+        
+        const mabeeeTarget = document.getElementById('mabeee-target');
+        const targetText = document.getElementById('target-text');
+        const targetIcon = document.getElementById('target-icon');
+        const btnGazeToggle = document.getElementById('btn-gaze-toggle');
+
+        function updateTimerDisplay(value) {
+            timerSeconds = parseInt(value, 10);
+            timerVal.textContent = timerSeconds + ' 秒';
+            sliderTimer.value = timerSeconds;
+        }
+        sliderTimer.addEventListener('input', (e) => updateTimerDisplay(e.target.value));
+
+        function setMode(modeNum) {
+            appMode = modeNum;
+            document.querySelectorAll('.mode-select-btn').forEach((btn, idx) => {
+                if (idx + 1 === modeNum) {
+                    btn.className = "mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all";
+                } else {
+                    btn.className = "mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all";
+                }
+            });
+        }
+        document.getElementById('mode-btn-1').addEventListener('click', () => setMode(1));
+        document.getElementById('mode-btn-2').addEventListener('click', () => setMode(2));
+        document.getElementById('mode-btn-3').addEventListener('click', () => setMode(3));
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '1') setMode(1);
+            if (e.key === '2') setMode(2);
+            if (e.key === '3') setMode(3);
+            
+            if (e.key === 'ArrowLeft') {
+                let newVal = Math.max(1, timerSeconds - 1);
+                updateTimerDisplay(newVal);
+            }
+            if (e.key === 'ArrowRight') {
+                let newVal = Math.min(180, timerSeconds + 1);
+                updateTimerDisplay(newVal);
+            }
+            if (e.key.toLowerCase() === 'x' && !scrRun.classList.contains('hidden')) {
+                toggleGazeInput();
+            }
+        });
+
+        // Bluetooth接続
+        document.getElementById('btn-connect').addEventListener('click', async () => {
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'MaBeee' }],
+                    optionalServices: [MABEEE_SERVICE_UUID]
+                });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(MABEEE_SERVICE_UUID);
+                mabeeeCharacteristic = await service.getCharacteristic(MABEEE_CHAR_UUID);
+                
+                document.getElementById('launcher-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 接続中`;
+                document.getElementById('launcher-status').className = "px-4 py-1.5 rounded-full text-sm font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-2";
+                document.getElementById('btn-connect').textContent = "接続完了";
+                document.getElementById('btn-connect').classList.replace('bg-teal-500', 'bg-emerald-600');
+            } catch (err) {
+                console.warn("Bluetooth接続失敗", err);
+            }
+        });
+
+        // 1) 視線入力用カメラ（インカメラ）
+        document.getElementById('btn-in-camera').addEventListener('click', async () => {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                let constraints = { video: { facingMode: "user" } };
+                if (videoDevices.length > 1) {
+                    const frontCam = videoDevices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('built-in'));
+                    if (frontCam) {
+                        constraints = { video: { deviceId: { exact: frontCam.deviceId } } };
+                    }
+                }
+
+                streamIn = await navigator.mediaDevices.getUserMedia(constraints);
+                videoIn.srcObject = streamIn;
+                placeholderIn.classList.add('hidden');
+                document.getElementById('btn-in-camera').textContent = "インカメラ起動中";
+                document.getElementById('btn-in-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
+            } catch (err) {
+                alert("インカメラの起動に失敗しました。");
+            }
+        });
+
+        // 2) 対象物用カメラ（外付けWebカメラ）
+        document.getElementById('btn-out-camera').addEventListener('click', async () => {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                let constraints = { video: { facingMode: "environment" } };
+                if (videoDevices.length > 1) {
+                    const usbCam = videoDevices.find(d => d.label.toLowerCase().includes('usb') || d.label.toLowerCase().includes('external') || d.label.toLowerCase().includes('back'));
+                    if (usbCam) {
+                        constraints = { video: { deviceId: { exact: usbCam.deviceId } } };
+                    } else {
+                        const otherCam = videoDevices.find(d => !d.label.toLowerCase().includes('front') && !d.label.toLowerCase().includes('built-in'));
+                        if (otherCam) {
+                            constraints = { video: { deviceId: { exact: otherCam.deviceId } } };
+                        }
+                    }
+                }
+
+                streamOut = await navigator.mediaDevices.getUserMedia(constraints);
+                videoOut.srcObject = streamOut;
+                
+                videoRun.srcObject = streamOut; 
+                videoRun.classList.remove('hidden');
+                
+                placeholderOut.classList.add('hidden');
+                document.getElementById('btn-out-camera').textContent = "外付けWebカメラ起動中";
+                document.getElementById('btn-out-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
+            } catch (err) {
+                alert("外付けWebカメラの起動に失敗しました。");
+            }
+        });
+
+        // 画面遷移
+        document.getElementById('btn-start').addEventListener('click', () => {
+            scrLauncher.classList.add('hidden');
+            scrRun.classList.remove('hidden');
+            
+            mabeeeTarget.className = "draggable absolute bg-slate-800 border-4 border-slate-700 hover:border-teal-400 rounded-3xl flex flex-col justify-center items-center p-6 cursor-move shadow-2xl transition-colors duration-150 select-none overflow-hidden";
+            const size = selectSize.value;
+            if (size === 'size-xl') mabeeeTarget.classList.add('w-[80vw]', 'h-[65vh]');
+            else if (size === 'size-l') mabeeeTarget.classList.add('w-[50vw]', 'h-[45vh]');
+            else if (size === 'size-m') mabeeeTarget.classList.add('w-[35vw]', 'h-[30vh]');
+            else if (size === 'size-s') mabeeeTarget.classList.add('w-[20vw]', 'h-[20vh]');
+            
+            mabeeeTarget.style.top = '45%';
+            mabeeeTarget.style.left = '50%';
+            mabeeeTarget.style.transform = 'translate(-50%, -50%)';
+            
+            targetText.textContent = "マビーON";
+            targetText.classList.remove('text-amber-300');
+            targetIcon.textContent = "🤖";
+        });
+
+        document.getElementById('btn-back').addEventListener('click', () => {
+            stopMaBeeeOutput();
+            scrRun.classList.add('hidden');
+            scrLauncher.classList.remove('hidden');
+        });
+
+        function toggleGazeInput() {
+            isGazeEnabled = !isGazeEnabled;
+            if (isGazeEnabled) {
+                btnGazeToggle.className = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base";
+                btnGazeToggle.innerHTML = `<span>👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
+                document.getElementById('gaze-dot').style.display = streamIn ? 'block' : 'none';
+            } else {
+                btnGazeToggle.className = "bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold px-5 py-3 rounded-xl shadow-lg border border-slate-600 flex items-center gap-2 transition-all active:scale-95 text-base";
+                btnGazeToggle.innerHTML = `<span>❌</span> 視線入力: OFF <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
+                document.getElementById('gaze-dot').style.display = 'none';
+            }
+        }
+        btnGazeToggle.addEventListener('click', toggleGazeInput);
+
+        // ドラッグ＆ドロップ
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        mabeeeTarget.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            mabeeeTarget.setPointerCapture(e.pointerId);
+            const rect = mabeeeTarget.getBoundingClientRect();
+            mabeeeTarget.style.transform = 'none';
+            mabeeeTarget.style.left = rect.left + 'px';
+            mabeeeTarget.style.top = rect.top + 'px';
+            startX = e.clientX; startY = e.clientY;
+            initialLeft = rect.left; initialTop = rect.top;
+        });
+
+        mabeeeTarget.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            mabeeeTarget.style.left = (initialLeft + (e.clientX - startX)) + 'px';
+            mabeeeTarget.style.top = (initialTop + (e.clientY - startY)) + 'px';
+        });
+
+        mabeeeTarget.addEventListener('pointerup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            mabeeeTarget.releasePointerCapture(e.pointerId);
+            if (Math.abs(e.clientX - startX) < 5 && Math.abs(e.clientY - startY) < 5 && appMode === 1) {
+                handleTriggerInput();
+            }
+        });
+
+        async function sendBluetoothPwm(val) {
+            if (!mabeeeCharacteristic) return;
+            try { await mabeeeCharacteristic.writeValue(new Uint8Array([val])); } catch (err) {}
+        }
+
+        function startMaBeeeOutput() {
+            if (isOutputActive) return;
+            isOutputActive = true;
+            playBeep('start');
+            sendBluetoothPwm(100);
+
+            mabeeeTarget.classList.replace('bg-slate-800', 'bg-amber-500/30');
+            mabeeeTarget.classList.add('border-amber-400', 'shadow-[0_0_30px_rgba(251,191,36,0.6)]');
+            targetText.classList.add('text-amber-300');
+            targetIcon.textContent = "⚡🚀";
+
+            if (appMode === 1 || appMode === 2) {
+                let timeLeft = timerSeconds;
+                targetText.textContent = `実行中 ${timeLeft} 秒`;
+                countdownInterval = setInterval(() => {
+                    timeLeft -= 1;
+                    if (timeLeft <= 0) clearInterval(countdownInterval);
+                    else targetText.textContent = `実行中 ${timeLeft} 秒`;
+                }, 1000);
+                outputTimeout = setTimeout(() => { stopMaBeeeOutput(); }, timerSeconds * 1000);
+            } else if (appMode === 3) {
+                targetText.textContent = "実行中";
+            }
+        }
+
+        function stopMaBeeeOutput() {
+            isOutputActive = false;
+            if (outputTimeout) clearTimeout(outputTimeout);
+            if (countdownInterval) clearInterval(countdownInterval);
+            playBeep('stop');
+            sendBluetoothPwm(0);
+
+            mabeeeTarget.className = mabeeeTarget.className.replace('bg-amber-500/30', 'bg-slate-800');
+            mabeeeTarget.classList.remove('border-amber-400', 'shadow-[0_0_30px_rgba(251,191,36,0.6)]');
+            targetText.textContent = "マビーON";
+            targetText.classList.remove('text-amber-300');
+            targetIcon.textContent = "🤖";
+        }
+
+        function handleTriggerInput() {
+            if (isOutputActive && (appMode === 1 || appMode === 2)) return;
+            startMaBeeeOutput();
+        }
+
+        mabeeeTarget.addEventListener('mouseenter', () => {
+            if (!isGazeEnabled) return;
+            if (appMode === 2) handleTriggerInput();
+            else if (appMode === 3) startMaBeeeOutput();
+        });
+
+        mabeeeTarget.addEventListener('mouseleave', () => {
+            if (appMode === 3) stopMaBeeeOutput();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isGazeEnabled || scrRun.classList.contains('hidden') || !streamIn) return;
+            const dot = document.getElementById('gaze-dot');
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+    </script>
+</body>
+</html>
