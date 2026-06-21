@@ -9,8 +9,6 @@
         *, *::before, *::after { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         .draggable { touch-action: none; user-select: none; }
-        
-        /* 視線入力ONの時に連動する疑似視線ポインタ（赤い丸） */
         #gaze-dot {
             position: fixed;
             width: 24px;
@@ -23,8 +21,6 @@
             transform: translate(-50%, -50%);
             display: none;
         }
-        
-        /* 実行画面の［マビーON］ボタンの中に外付けカメラ映像を綺麗にフィットさせる設定 */
         .target-video {
             position: absolute;
             inset: 0;
@@ -38,10 +34,14 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen select-none overflow-hidden">
 
+    <!-- 疑似視線ポインタ -->
     <div id="gaze-dot"></div>
 
-    <div id="screen-launcher" class="w-full min-h-screen flex flex-col p-6">
-        <header class="w-full mb-4 flex justify-between items-center border-b border-slate-700 pb-4">
+    <!-- ========================================================= -->
+    <!-- 1. ランチャー画面（初期状態） -->
+    <!-- ========================================================= -->
+    <div id="screen-launcher" class="min-h-screen flex flex-col p-6">
+        <header class="mb-6 flex justify-between items-center border-b border-slate-700 pb-4">
             <h1 class="text-2xl font-bold tracking-wider text-teal-400 flex items-center gap-2">
                 <span>🔋</span> MaBeee for School_Control_Eye
             </h1>
@@ -50,40 +50,35 @@
             </div>
         </header>
 
-        <div class="flex-1 grid grid-cols-12 gap-6 items-stretch w-full overflow-hidden">
-            
-            <div class="col-span-7 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between gap-4 overflow-y-auto">
-                
+        <div class="flex-1 grid grid-cols-12 gap-6">
+            <!-- 左半分：設定項目 -->
+            <div class="col-span-7 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col gap-5">
+                <!-- 機器接続と２つのカメラ設定 -->
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-2">［機器接続］</h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-3">［機器接続］</h2>
                     <button id="btn-connect" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold py-3 rounded-lg transition-all active:scale-95 shadow-lg">
                         MaBeee for Schoolに接続する
                     </button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
-                        <h2 class="text-sm font-bold text-slate-400">［視線入力用カメラ］</h2>
-                        <select id="select-in-camera" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-slate-200 text-xs focus:outline-none focus:border-teal-500">
-                            <option value="">（カメラが見つかりません）</option>
-                        </select>
-                        <button id="btn-in-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2 rounded-lg transition-all text-sm">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h2 class="text-sm font-bold text-slate-400 mb-2">［視線入力用カメラ］</h2>
+                        <button id="btn-in-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-sm">
                             インカメラ（顔）を起動
                         </button>
                     </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
-                        <h2 class="text-sm font-bold text-slate-400">［対象物を映すための外付けWebカメラ］</h2>
-                        <select id="select-out-camera" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-slate-200 text-xs focus:outline-none focus:border-teal-500">
-                            <option value="">（カメラが見つかりません）</option>
-                        </select>
-                        <button id="btn-out-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2 rounded-lg transition-all text-xs">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <h2 class="text-sm font-bold text-slate-400 mb-2">［対象物を映すための外付けWebカメラ］</h2>
+                        <button id="btn-out-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-xs">
                             外付けWebカメラ（乾電池式のオモチャなど）を起動
                         </button>
                     </div>
                 </div>
 
+                <!-- モード切替 -->
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-2">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］）</span></h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-3">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］）</span></h2>
                     <div class="grid grid-cols-1 gap-2">
                         <button id="mode-btn-1" class="mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
                             ① クリック/タップ/注視でタイマー実行
@@ -97,19 +92,16 @@
                     </div>
                 </div>
 
+                <!-- タイマー設定（スライダー） -->
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
                     <div class="flex justify-between items-center mb-1">
-                        <h2 class="text-sm font-bold text-slate-400">［タイマー秒数設定］ <span class="text-xs text-slate-500">（キーボード［←］［→］で1秒ずつ微調整）</span></h2>
+                        <h2 class="text-sm font-bold text-slate-400">［タイマー秒数設定］ <span class="text-xs text-slate-500">（矢印キーで1秒ずつ微調整）</span></h2>
                         <span id="timer-val" class="text-xl font-mono font-bold text-amber-400">5 秒</span>
                     </div>
                     <input id="slider-timer" type="range" min="1" max="180" step="1" value="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>1秒</span>
-                        <span>90秒</span>
-                        <span>180秒</span>
-                    </div>
                 </div>
 
+                <!-- ボタンサイズと音 -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
                         <h2 class="text-sm font-bold text-slate-400 mb-1">［ボタンサイズ切替］</h2>
@@ -131,8 +123,9 @@
                 </div>
             </div>
 
-            <div class="col-span-5 flex flex-col justify-between gap-4 h-full">
-                
+            <!-- 右半分：２つのプレビューとスタート -->
+            <div class="col-span-5 flex flex-col gap-4">
+                <!-- 上段：インカメラプレビュー（顔用、鏡面反転） -->
                 <div class="flex-1 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative flex items-center justify-center min-h-[140px]">
                     <video id="webcam-in" class="absolute inset-0 w-full h-full object-cover scale-x-[-1]" autoplay playsinline muted></video>
                     <div id="placeholder-in" class="text-center text-slate-500 p-2 z-10">
@@ -141,6 +134,7 @@
                     </div>
                 </div>
 
+                <!-- 下段：外付けカメラプレビュー（対象物用、反転なし） -->
                 <div class="flex-1 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden relative flex items-center justify-center min-h-[140px]">
                     <video id="webcam-out" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
                     <div id="placeholder-out" class="text-center text-slate-500 p-2 z-10">
@@ -149,24 +143,30 @@
                     </div>
                 </div>
 
-                <button id="btn-start" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 text-xl font-black py-4 rounded-xl transition-all shadow-xl active:scale-[0.98] shrink-0">
+                <!-- 特大スタートボタン -->
+                <button id="btn-start" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 text-xl font-black py-4 rounded-xl transition-all shadow-xl active:scale-[0.98]">
                     🚀 スタート（実行画面へ）
                 </button>
             </div>
-            
         </div>
     </div>
 
 
+    <!-- ========================================================= -->
+    <!-- 2. 実行画面（スタート後に表示） -->
+    <!-- ========================================================= -->
     <div id="screen-run" class="fixed inset-0 min-h-screen hidden bg-slate-950">
         
+        <!-- ドラッグ移動可能な［マビーON］ボタン -->
         <div id="mabeee-target" class="draggable absolute bg-slate-800 border-4 border-slate-700 hover:border-teal-400 rounded-3xl flex flex-col justify-center items-center p-6 cursor-move shadow-2xl transition-colors duration-150 select-none overflow-hidden">
+            <!-- 外付けカメラの映像を投影 -->
             <video id="run-webcam" class="target-video hidden" autoplay playsinline muted></video>
             
             <span id="target-icon" class="pointer-events-none text-6xl mb-4 z-10 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)]">🤖</span>
             <span id="target-text" class="pointer-events-none text-3xl font-black tracking-widest text-slate-200 z-10 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)]">マビーON</span>
         </div>
 
+        <!-- 固定コントロール領域（画面下部） -->
         <div class="absolute bottom-6 left-6 z-50">
             <button id="btn-gaze-toggle" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base">
                 <span id="gaze-status-icon">👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>
@@ -180,6 +180,7 @@
         </div>
     </div>
 
+    <!-- 音ユーティリティ -->
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(type) {
@@ -222,6 +223,7 @@
         }
     </script>
 
+    <!-- メインアプリケーションロジック -->
     <script>
         let appMode = 1; 
         let timerSeconds = 5;
@@ -237,6 +239,7 @@
         const MABEEE_CHAR_UUID    = '0000aaa1-0000-1000-8000-00805f9b34fb';
         let mabeeeCharacteristic = null;
 
+        // UI要素
         const scrLauncher = document.getElementById('screen-launcher');
         const scrRun = document.getElementById('screen-run');
         const sliderTimer = document.getElementById('slider-timer');
@@ -250,63 +253,10 @@
         const placeholderIn = document.getElementById('placeholder-in');
         const placeholderOut = document.getElementById('placeholder-out');
         
-        const selectInCam = document.getElementById('select-in-camera');
-        const selectOutCam = document.getElementById('select-out-camera');
-
         const mabeeeTarget = document.getElementById('mabeee-target');
         const targetText = document.getElementById('target-text');
         const targetIcon = document.getElementById('target-icon');
         const btnGazeToggle = document.getElementById('btn-gaze-toggle');
-
-        // --- 【改善ロジック】ページ読み込みと同時に権限を優しくチェック・取得する ---
-        async function initCameraSelect() {
-            try {
-                // セキュリティロック解除のための初回ダミーリクエスト（これで製品名が解放されます）
-                // 拒否された場合や未着手の場合はcatchへ流れます
-                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                tempStream.getTracks().forEach(track => track.stop()); // リスト取得のためだけの起動なので即停止
-
-                // デバイスの一覧を精査
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-                selectInCam.innerHTML = '';
-                selectOutCam.innerHTML = '';
-
-                if (videoDevices.length === 0) {
-                    const opt = document.createElement('option');
-                    opt.text = 'カメラが見つかりません';
-                    selectInCam.appendChild(opt.cloneNode(true));
-                    selectOutCam.appendChild(opt.cloneNode(true));
-                    return;
-                }
-
-                videoDevices.forEach((device, index) => {
-                    const label = device.label || `カメラ ${index + 1}`;
-                    const opt = document.createElement('option');
-                    opt.value = device.deviceId;
-                    opt.text = label;
-
-                    // 両方のドロップダウンへ追加
-                    selectInCam.appendChild(opt.cloneNode(true));
-                    selectOutCam.appendChild(opt.cloneNode(true));
-                });
-
-                // 2つ以上カメラがあれば、インカメラには1番目、外付けには2番目をデフォルト選択
-                if (videoDevices.length > 1) {
-                    selectOutCam.selectedIndex = 1;
-                }
-            } catch (err) {
-                // 初回アクセス時など、まだブラウザの許可が得られていない状態のフォールバック
-                selectInCam.innerHTML = '<option value="">起動ボタンを押して許可してください</option>';
-                selectOutCam.innerHTML = '<option value="">起動ボタンを押して許可してください</option>';
-                console.warn("初期状態でのカメラ名取得制限（許可待ち状態）:", err);
-            }
-        }
-
-        // 起動時にまずリスト生成ロジックを走らせる
-        window.addEventListener('DOMContentLoaded', initCameraSelect);
-
 
         function updateTimerDisplay(value) {
             timerSeconds = parseInt(value, 10);
@@ -319,9 +269,9 @@
             appMode = modeNum;
             document.querySelectorAll('.mode-select-btn').forEach((btn, idx) => {
                 if (idx + 1 === modeNum) {
-                    btn.className = "mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all";
+                    btn.className = "mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2 px-4 rounded-xl text-sm transition-all";
                 } else {
-                    btn.className = "mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all";
+                    btn.className = "mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all";
                 }
             });
         }
@@ -367,49 +317,59 @@
             }
         });
 
-        // 1) 視線入力用カメラ
+        // 1) 視線入力用カメラ（インカメラ）
         document.getElementById('btn-in-camera').addEventListener('click', async () => {
             try {
-                if (streamIn) { streamIn.getTracks().forEach(track => track.stop()); }
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
                 
-                const selectedId = selectInCam.value;
-                const constraints = { video: selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "user" } };
+                let constraints = { video: { facingMode: "user" } };
+                if (videoDevices.length > 1) {
+                    const frontCam = videoDevices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('built-in'));
+                    if (frontCam) {
+                        constraints = { video: { deviceId: { exact: frontCam.deviceId } } };
+                    }
+                }
 
                 streamIn = await navigator.mediaDevices.getUserMedia(constraints);
                 videoIn.srcObject = streamIn;
                 placeholderIn.classList.add('hidden');
                 document.getElementById('btn-in-camera').textContent = "インカメラ起動中";
                 document.getElementById('btn-in-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
-                
-                // カメラが起動し、許可が降りたタイミングでリストを再取得（ドロップダウンを最新名に更新）
-                initCameraSelect();
             } catch (err) {
-                alert("インカメラの起動に失敗しました。カメラへのアクセスを許可してください。");
+                alert("インカメラの起動に失敗しました。");
             }
         });
 
-        // 2) 対象物用カメラ
+        // 2) 対象物用カメラ（外付けWebカメラ）
         document.getElementById('btn-out-camera').addEventListener('click', async () => {
             try {
-                if (streamOut) { streamOut.getTracks().forEach(track => track.stop()); }
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
                 
-                const selectedId = selectOutCam.value;
-                const constraints = { video: selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "environment" } };
+                let constraints = { video: { facingMode: "environment" } };
+                if (videoDevices.length > 1) {
+                    const usbCam = videoDevices.find(d => d.label.toLowerCase().includes('usb') || d.label.toLowerCase().includes('external') || d.label.toLowerCase().includes('back'));
+                    if (usbCam) {
+                        constraints = { video: { deviceId: { exact: usbCam.deviceId } } };
+                    } else {
+                        const otherCam = videoDevices.find(d => !d.label.toLowerCase().includes('front') && !d.label.toLowerCase().includes('built-in'));
+                        if (otherCam) {
+                            constraints = { video: { deviceId: { exact: otherCam.deviceId } } };
+                        }
+                    }
+                }
 
                 streamOut = await navigator.mediaDevices.getUserMedia(constraints);
                 videoOut.srcObject = streamOut;
-                
                 videoRun.srcObject = streamOut; 
                 videoRun.classList.remove('hidden');
                 
                 placeholderOut.classList.add('hidden');
                 document.getElementById('btn-out-camera').textContent = "外付けWebカメラ起動中";
                 document.getElementById('btn-out-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
-                
-                // カメラが起動し、許可が降りたタイミングでリストを再取得（ドロップダウンを最新名に更新）
-                initCameraSelect();
             } catch (err) {
-                alert("外付けWebカメラの起動に失敗しました。カメラへのアクセスを許可してください。");
+                alert("外付けWebカメラの起動に失敗しました。");
             }
         });
 
