@@ -62,22 +62,28 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h2 class="text-sm font-bold text-slate-400 mb-2">［視線入力用カメラ］</h2>
-                        <button id="btn-in-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-sm">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
+                        <h2 class="text-sm font-bold text-slate-400">［視線入力用カメラ］</h2>
+                        <select id="select-in-camera" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-slate-200 text-xs focus:outline-none focus:border-teal-500">
+                            <option value="">カメラを読み込み中...</option>
+                        </select>
+                        <button id="btn-in-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2 rounded-lg transition-all text-sm">
                             インカメラ（顔）を起動
                         </button>
                     </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h2 class="text-sm font-bold text-slate-400 mb-2">［対象物を映すための外付けWebカメラ］</h2>
-                        <button id="btn-out-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-xs">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
+                        <h2 class="text-sm font-bold text-slate-400">［対象物を映すための外付けWebカメラ］</h2>
+                        <select id="select-out-camera" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-slate-200 text-xs focus:outline-none focus:border-teal-500">
+                            <option value="">カメラを読み込み中...</option>
+                        </select>
+                        <button id="btn-out-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2 rounded-lg transition-all text-xs">
                             外付けWebカメラ（乾電池式のオモチャなど）を起動
                         </button>
                     </div>
                 </div>
 
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-2">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］でも切替可能）</span></h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-2">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］）</span></h2>
                     <div class="grid grid-cols-1 gap-2">
                         <button id="mode-btn-1" class="mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
                             ① クリック/タップ/注視でタイマー実行
@@ -244,10 +250,59 @@
         const placeholderIn = document.getElementById('placeholder-in');
         const placeholderOut = document.getElementById('placeholder-out');
         
+        const selectInCam = document.getElementById('select-in-camera');
+        const selectOutCam = document.getElementById('select-out-camera');
+
         const mabeeeTarget = document.getElementById('mabeee-target');
         const targetText = document.getElementById('target-text');
         const targetIcon = document.getElementById('target-icon');
         const btnGazeToggle = document.getElementById('btn-gaze-toggle');
+
+        // --- 【新規実装】PCに繋がっている全カメラを検知してセレクトボックスに格納する処理 ---
+        async function initCameraSelect() {
+            try {
+                // 初回のダミーアクセス（これを行うことでカメラの具体的な製品名（ラベル）がブラウザから取得可能になります）
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                tempStream.getTracks().forEach(track => track.stop()); // 用が済んだら即停止
+
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                selectInCam.innerHTML = '';
+                selectOutCam.innerHTML = '';
+
+                if (videoDevices.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.text = 'カメラが見つかりません';
+                    selectInCam.appendChild(opt.cloneNode(true));
+                    selectOutCam.appendChild(opt.cloneNode(true));
+                    return;
+                }
+
+                videoDevices.forEach((device, index) => {
+                    const label = device.label || `カメラ ${index + 1}`;
+                    const opt = document.createElement('option');
+                    opt.value = device.deviceId;
+                    opt.text = label;
+
+                    // インカメラ用リストに追加
+                    selectInCam.appendChild(opt.cloneNode(true));
+                    // 外付けカメラ用リストに追加
+                    selectOutCam.appendChild(opt.cloneNode(true));
+                });
+
+                // 初期状態の選択割り当て（2つ以上あれば、インカメラには1番目、外付けには2番目をデフォルト選択）
+                if (videoDevices.length > 1) {
+                    selectOutCam.selectedIndex = 1;
+                }
+            } catch (err) {
+                console.error("カメラリスト取得失敗:", err);
+            }
+        }
+
+        // アプリ起動時にカメラ一覧を即時読み込み
+        window.addEventListener('DOMContentLoaded', initCameraSelect);
+
 
         function updateTimerDisplay(value) {
             timerSeconds = parseInt(value, 10);
@@ -308,19 +363,13 @@
             }
         });
 
-        // 1) 視線入力用カメラ（インカメラ）
+        // 1) 視線入力用カメラ（選択されたIDで確実に起動）
         document.getElementById('btn-in-camera').addEventListener('click', async () => {
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                if (streamIn) { streamIn.getTracks().forEach(track => track.stop()); } // 起動中の場合は一度停止
                 
-                let constraints = { video: { facingMode: "user" } };
-                if (videoDevices.length > 1) {
-                    const frontCam = videoDevices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('built-in'));
-                    if (frontCam) {
-                        constraints = { video: { deviceId: { exact: frontCam.deviceId } } };
-                    }
-                }
+                const selectedId = selectInCam.value;
+                const constraints = { video: selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "user" } };
 
                 streamIn = await navigator.mediaDevices.getUserMedia(constraints);
                 videoIn.srcObject = streamIn;
@@ -328,179 +377,20 @@
                 document.getElementById('btn-in-camera').textContent = "インカメラ起動中";
                 document.getElementById('btn-in-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
             } catch (err) {
-                alert("インカメラの起動に失敗しました。");
+                alert("インカメラの起動に失敗しました。選択したカメラを変更してみてください。");
             }
         });
 
-        // 2) 対象物用カメラ（外付けWebカメラ）
+        // 2) 対象物用カメラ（選択されたIDで確実に起動、実行画面へ反映）
         document.getElementById('btn-out-camera').addEventListener('click', async () => {
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                if (streamOut) { streamOut.getTracks().forEach(track => track.stop()); } // 起動中の場合は一度停止
                 
-                let constraints = { video: { facingMode: "environment" } };
-                if (videoDevices.length > 1) {
-                    const usbCam = videoDevices.find(d => d.label.toLowerCase().includes('usb') || d.label.toLowerCase().includes('external') || d.label.toLowerCase().includes('back'));
-                    if (usbCam) {
-                        constraints = { video: { deviceId: { exact: usbCam.deviceId } } };
-                    } else {
-                        const otherCam = videoDevices.find(d => !d.label.toLowerCase().includes('front') && !d.label.toLowerCase().includes('built-in'));
-                        if (otherCam) {
-                            constraints = { video: { deviceId: { exact: otherCam.deviceId } } };
-                        }
-                    }
-                }
+                const selectedId = selectOutCam.value;
+                const constraints = { video: selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "environment" } };
 
                 streamOut = await navigator.mediaDevices.getUserMedia(constraints);
                 videoOut.srcObject = streamOut;
                 
                 videoRun.srcObject = streamOut; 
-                videoRun.classList.remove('hidden');
-                
-                placeholderOut.classList.add('hidden');
-                document.getElementById('btn-out-camera').textContent = "外付けWebカメラ起動中";
-                document.getElementById('btn-out-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
-            } catch (err) {
-                alert("外付けWebカメラの起動に失敗しました。");
-            }
-        });
-
-        // 画面遷移
-        document.getElementById('btn-start').addEventListener('click', () => {
-            scrLauncher.classList.add('hidden');
-            scrRun.classList.remove('hidden');
-            
-            mabeeeTarget.className = "draggable absolute bg-slate-800 border-4 border-slate-700 hover:border-teal-400 rounded-3xl flex flex-col justify-center items-center p-6 cursor-move shadow-2xl transition-colors duration-150 select-none overflow-hidden";
-            const size = selectSize.value;
-            if (size === 'size-xl') mabeeeTarget.classList.add('w-[80vw]', 'h-[65vh]');
-            else if (size === 'size-l') mabeeeTarget.classList.add('w-[50vw]', 'h-[45vh]');
-            else if (size === 'size-m') mabeeeTarget.classList.add('w-[35vw]', 'h-[30vh]');
-            else if (size === 'size-s') mabeeeTarget.classList.add('w-[20vw]', 'h-[20vh]');
-            
-            mabeeeTarget.style.top = '45%';
-            mabeeeTarget.style.left = '50%';
-            mabeeeTarget.style.transform = 'translate(-50%, -50%)';
-            
-            targetText.textContent = "マビーON";
-            targetText.classList.remove('text-amber-300');
-            targetIcon.textContent = "🤖";
-        });
-
-        document.getElementById('btn-back').addEventListener('click', () => {
-            stopMaBeeeOutput();
-            scrRun.classList.add('hidden');
-            scrLauncher.classList.remove('hidden');
-        });
-
-        function toggleGazeInput() {
-            isGazeEnabled = !isGazeEnabled;
-            if (isGazeEnabled) {
-                btnGazeToggle.className = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base";
-                btnGazeToggle.innerHTML = `<span>👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
-                document.getElementById('gaze-dot').style.display = streamIn ? 'block' : 'none';
-            } else {
-                btnGazeToggle.className = "bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold px-5 py-3 rounded-xl shadow-lg border border-slate-600 flex items-center gap-2 transition-all active:scale-95 text-base";
-                btnGazeToggle.innerHTML = `<span>❌</span> 視線入力: OFF <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
-                document.getElementById('gaze-dot').style.display = 'none';
-            }
-        }
-        btnGazeToggle.addEventListener('click', toggleGazeInput);
-
-        // ドラッグ＆ドロップ
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        mabeeeTarget.addEventListener('pointerdown', (e) => {
-            isDragging = true;
-            mabeeeTarget.setPointerCapture(e.pointerId);
-            const rect = mabeeeTarget.getBoundingClientRect();
-            mabeeeTarget.style.transform = 'none';
-            mabeeeTarget.style.left = rect.left + 'px';
-            mabeeeTarget.style.top = rect.top + 'px';
-            startX = e.clientX; startY = e.clientY;
-            initialLeft = rect.left; initialTop = rect.top;
-        });
-
-        mabeeeTarget.addEventListener('pointermove', (e) => {
-            if (!isDragging) return;
-            mabeeeTarget.style.left = (initialLeft + (e.clientX - startX)) + 'px';
-            mabeeeTarget.style.top = (initialTop + (e.clientY - startY)) + 'px';
-        });
-
-        mabeeeTarget.addEventListener('pointerup', (e) => {
-            if (!isDragging) return;
-            isDragging = false;
-            mabeeeTarget.releasePointerCapture(e.pointerId);
-            if (Math.abs(e.clientX - startX) < 5 && Math.abs(e.clientY - startY) < 5 && appMode === 1) {
-                handleTriggerInput();
-            }
-        });
-
-        async function sendBluetoothPwm(val) {
-            if (!mabeeeCharacteristic) return;
-            try { await mabeeeCharacteristic.writeValue(new Uint8Array([val])); } catch (err) {}
-        }
-
-        function startMaBeeeOutput() {
-            if (isOutputActive) return;
-            isOutputActive = true;
-            playBeep('start');
-            sendBluetoothPwm(100);
-
-            mabeeeTarget.classList.replace('bg-slate-800', 'bg-amber-500/30');
-            mabeeeTarget.classList.add('border-amber-400', 'shadow-[0_0_30px_rgba(251,191,36,0.6)]');
-            targetText.classList.add('text-amber-300');
-            targetIcon.textContent = "⚡🚀";
-
-            if (appMode === 1 || appMode === 2) {
-                let timeLeft = timerSeconds;
-                targetText.textContent = `実行中 ${timeLeft} 秒`;
-                countdownInterval = setInterval(() => {
-                    timeLeft -= 1;
-                    if (timeLeft <= 0) clearInterval(countdownInterval);
-                    else targetText.textContent = `実行中 ${timeLeft} 秒`;
-                }, 1000);
-                outputTimeout = setTimeout(() => { stopMaBeeeOutput(); }, timerSeconds * 1000);
-            } else if (appMode === 3) {
-                targetText.textContent = "実行中";
-            }
-        }
-
-        function stopMaBeeeOutput() {
-            isOutputActive = false;
-            if (outputTimeout) clearTimeout(outputTimeout);
-            if (countdownInterval) clearInterval(countdownInterval);
-            playBeep('stop');
-            sendBluetoothPwm(0);
-
-            mabeeeTarget.className = mabeeeTarget.className.replace('bg-amber-500/30', 'bg-slate-800');
-            mabeeeTarget.classList.remove('border-amber-400', 'shadow-[0_0_30px_rgba(251,191,36,0.6)]');
-            targetText.textContent = "マビーON";
-            targetText.classList.remove('text-amber-300');
-            targetIcon.textContent = "🤖";
-        }
-
-        function handleTriggerInput() {
-            if (isOutputActive && (appMode === 1 || appMode === 2)) return;
-            startMaBeeeOutput();
-        }
-
-        mabeeeTarget.addEventListener('mouseenter', () => {
-            if (!isGazeEnabled) return;
-            if (appMode === 2) handleTriggerInput();
-            else if (appMode === 3) startMaBeeeOutput();
-        });
-
-        mabeeeTarget.addEventListener('mouseleave', () => {
-            if (appMode === 3) stopMaBeeeOutput();
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isGazeEnabled || scrRun.classList.contains('hidden') || !streamIn) return;
-            const dot = document.getElementById('gaze-dot');
-            dot.style.left = e.clientX + 'px';
-            dot.style.top = e.clientY + 'px';
-        });
-    </script>
-</body>
-</html>
+                videoRun.
