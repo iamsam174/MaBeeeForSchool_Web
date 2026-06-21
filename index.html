@@ -40,8 +40,8 @@
 
     <div id="gaze-dot"></div>
 
-    <div id="screen-launcher" class="min-h-screen flex flex-col p-6">
-        <header class="mb-6 flex justify-between items-center border-b border-slate-700 pb-4">
+    <div id="screen-launcher" class="w-full min-h-screen flex flex-col p-6">
+        <header class="w-full mb-4 flex justify-between items-center border-b border-slate-700 pb-4">
             <h1 class="text-2xl font-bold tracking-wider text-teal-400 flex items-center gap-2">
                 <span>🔋</span> MaBeee for School_Control_Eye
             </h1>
@@ -50,11 +50,12 @@
             </div>
         </header>
 
-        <div class="flex-1 grid grid-cols-12 gap-6">
-            <div class="col-span-7 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col gap-5">
+        <div class="flex-1 grid grid-cols-12 gap-6 items-stretch w-full overflow-hidden">
+            
+            <div class="col-span-7 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between gap-4 overflow-y-auto">
                 
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-3">［機器接続］</h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-2">［機器接続］</h2>
                     <button id="btn-connect" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold py-3 rounded-lg transition-all active:scale-95 shadow-lg">
                         MaBeee for Schoolに接続する
                     </button>
@@ -76,15 +77,15 @@
                 </div>
 
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-3">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］でも切替可能）</span></h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-2">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］でも切替可能）</span></h2>
                     <div class="grid grid-cols-1 gap-2">
-                        <button id="mode-btn-1" class="mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+                        <button id="mode-btn-1" class="mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
                             ① クリック/タップ/注視でタイマー実行
                         </button>
-                        <button id="mode-btn-2" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+                        <button id="mode-btn-2" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
                             ② マウスオーバーでタイマー実行
                         </button>
-                        <button id="mode-btn-3" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+                        <button id="mode-btn-3" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
                             ③ マウスポインタがボタン内にある間マビーON
                         </button>
                     </div>
@@ -95,35 +96,4 @@
                         <h2 class="text-sm font-bold text-slate-400">［タイマー秒数設定］ <span class="text-xs text-slate-500">（キーボード［←］［→］で1秒ずつ微調整）</span></h2>
                         <span id="timer-val" class="text-xl font-mono font-bold text-amber-400">5 秒</span>
                     </div>
-                    <input id="slider-timer" type="range" min="1" max="180" step="1" value="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>1秒</span>
-                        <span>90秒</span>
-                        <span>180秒</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h2 class="text-sm font-bold text-slate-400 mb-1">［ボタンサイズ切替］</h2>
-                        <select id="select-size" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none text-sm">
-                            <option value="size-xl" selected>特大（画面の約80%）</option>
-                            <option value="size-l">大</option>
-                            <option value="size-m">中</option>
-                            <option value="size-s">小</option>
-                        </select>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h2 class="text-sm font-bold text-slate-400 mb-1">［音の切替］</h2>
-                        <select id="select-sound" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none text-sm">
-                            <option value="sound-a" selected>電子音（ピコーン）</option>
-                            <option value="sound-b">ファンファーレ</option>
-                            <option value="sound-none">なし</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-span-5 flex flex-col gap-4">
-                
-                <div class="flex-1 bg-slate-950 rounded-xl border border-slate-7
+                    <input id="slider-timer" type="range" min="1" max="180" step="1" value="5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500
