@@ -1,6 +1,6 @@
 # MaBeeeForSchool_Web
 
-「MaBeeeForSchool_Web App」は、乾電池型IoTデバイス「MaBeee（マビー） for School」をBluetooth経由で手軽にコントロールするWebアプリです。
+**MaBeeeForSchool_Web App**は、乾電池型IoTデバイス「MaBeee（マビー） for School」をBluetooth経由で手軽にコントロールするWebアプリです。
 
 PC・タブレット端末・スマートフォンからURL `https://iamsam174.github.io/MaBeeeForSchool_Web/` にアクセスするだけですぐに利用できます。
 
@@ -16,7 +16,7 @@ Safari や Firefox では動作しませんので、ご注意ください。
 
 ## ✨ 主な機能
 
-- **WebGazer.jsによる視線追跡:** インカメラの映像からユーザーの視線をリアルタイムに追跡し、画面上のボタンを見るだけでMaBeeeを操作できます。（※使用するICT機器によっては、インカメラによる視線入力ができない機種があります）
+- **WebGazer.jsによる視線追跡:** インカメラの映像からユーザーの視線をリアルタイムに追跡し、画面上のボタンを見るだけでMaBeeeを操作できます。（※使用するICT機器によっては、インカメラによる視線入力ができない場合があります）
 - **多様な動作モード:** 利用者の障害特性や操作の習熟度に合わせて、以下の4つの動作モードを切り替えられます。
   1. **クリックまたはタップでタイマー実行モード:** マウスポインタをボタン内に移動させて左クリックする、または、ボタンをタップすると、タイマー設定した時間（1秒〜180秒）MaBeee for SchoolがONになります。
   2. **注視でタイマー実行（インカメラでの視線入力時）モード:** 設定した秒数（0.1秒〜3.0秒）ボタンを注視すると、タイマー設定した時間（1秒〜180秒）MaBeee for SchoolがONになります。
@@ -32,28 +32,10 @@ Safari や Firefox では動作しませんので、ご注意ください。
 - **対応ブラウザ:** Google Chrome または Microsoft Edge（※SafariやFirefoxでは動作しません）
 - **対応OS:** Windows 10/11, macOS, Android OS, Chrome OS
   - *(※iPad / iPhoneなどのiOS/iPadOS環境では、標準ブラウザSafariがWeb Bluetoothをブロックしているため動作しません。「Bluefy」や「WebBLE」といったWeb Bluetooth専用のブラウザアプリが必要です)*
-- **ネットワーク環境:** `https://` で配信されているサーバー、またはローカル環境（`http://localhost` / `http://127.0.0.1`）
 - **ハードウェア:** 
   - Bluetooth機能（BLE）を搭載したICT機器（WindowsPC、Mac、Android端末、Chromebook）
-  - 単４乾電池を入れた「MaBeee for School」（※青色のMaBeeeとは通信仕様が異なります）および乾電池で作動するオモチャなど
+  - 単４乾電池を入れたMaBeee for School（※青色のMaBeeeとは通信仕様が異なります）および乾電池で作動するオモチャなど
   - Webカメラ（乾電池式オモチャなどの対象物をボタンに映し出したい時に使用します）
-
-## 🚀 使い方（ローカルでの実行方法）
-
-本アプリはセキュリティの都合上、ファイルを直接ダブルクリック（`file://`）して開いてもBluetoothやカメラが機能しません。以下のいずれかの方法でローカルサーバーを立ち上げて起動してください。
-
-### 方法A: Pythonを使う場合（Mac / Windows共通）
-1. ターミナル（またはコマンドプロンプト）を開き、このファイルがあるディレクトリに移動します。
-2. 以下のコマンドを実行して簡易サーバーを立ち上げます。
-   ```bash
-   python3 -m http.server 8000
-   ```
-3. ブラウザで `http://localhost:8000/` にアクセスします。
-
-### 方法B: VS Codeを使う場合
-1. Visual Studio Codeで本フォルダを開きます。
-2. 拡張機能「Live Server」をインストールします。
-3. `index.html`を開き、右下の「Go Live」ボタンをクリックすると自動でブラウザが立ち上がります。
 
 ## ⚙️ ペアリングと操作手順
 
