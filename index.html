@@ -50,7 +50,7 @@
         <div class="flex-1 grid grid-cols-12 gap-6">
             <div class="col-span-7 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col gap-4">
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-3">［機器接続］</h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-3">［機器接続（Bluetoothペアリング）］</h2>
                     <button id="btn-connect" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold py-3 rounded-lg transition-all active:scale-95 shadow-lg">
                         MaBeee for Schoolに接続する
                     </button>
@@ -60,35 +60,41 @@
                     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
                         <h2 class="text-sm font-bold text-slate-400 mb-2">［視線入力用カメラ］</h2>
                         <button id="btn-in-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-sm">
-                            インカメラ（顔）を起動
+                            インカメラ（視線を捉える目的）を起動
                         </button>
                     </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <h2 class="text-sm font-bold text-slate-400 mb-2">［対象物を映すための外付けWebカメラ］</h2>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col gap-2">
+                        <h2 class="text-sm font-bold text-slate-400 mb-1">［対象物を映すための外付けWebカメラ］</h2>
                         <button id="btn-out-camera" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-xs">
-                            外付けWebカメラ（乾電池式のオモチャなど）を起動
+                            外付けWebカメラ（乾電池式のオモチャなどをボタンに映す目的）を起動
+                        </button>
+                        <button id="btn-out-camera-stop" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-xs">
+                            外付けWebカメラを停止
                         </button>
                     </div>
                 </div>
 
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                    <h2 class="text-sm font-bold text-slate-400 mb-3">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］）</span></h2>
+                    <h2 class="text-sm font-bold text-slate-400 mb-3">［動作モードの選択］ <span class="text-xs text-slate-500">（キーボード［1］［2］［3］［4］）</span></h2>
                     <div class="grid grid-cols-1 gap-2">
                         <button id="mode-btn-1" class="mode-select-btn text-left border-2 border-teal-500 bg-teal-500/10 text-teal-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
-                            ① 注視（固定時間オーバー）でタイマー実行
+                            ① クリックまたはタップでタイマー実行
                         </button>
                         <button id="mode-btn-2" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
-                            ② マウスオーバー（触れた瞬間）でタイマー実行
+                            ② 注視でタイマー実行（インカメラでの視線入力時）
                         </button>
                         <button id="mode-btn-3" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
-                            ③ ポインタがボタン内にある間マビーON
+                            ③ マウスオーバー（マウスポインタがボタンに触れた瞬間）でタイマー実行
+                        </button>
+                        <button id="mode-btn-4" class="mode-select-btn text-left border border-slate-700 bg-slate-800 text-slate-400 font-bold py-2 px-4 rounded-xl text-sm transition-all">
+                            ④ マウスポインタがボタン内にある間マビーON
                         </button>
                     </div>
                 </div>
 
                 <div id="wrapper-dwell-timer" class="bg-slate-900 p-4 rounded-xl border border-slate-700 transition-all">
                     <div class="flex justify-between items-center mb-1">
-                        <h2 class="text-sm font-bold text-slate-400">［モード①用の注視時間設定］ <span class="text-xs text-slate-500">（0.1秒〜3.0秒）</span></h2>
+                        <h2 class="text-sm font-bold text-slate-400">［モード②用の注視時間設定］ <span class="text-xs text-slate-500">（0.1秒〜3.0秒）</span></h2>
                         <span id="dwell-timer-val" class="text-xl font-mono font-bold text-teal-400">1.5 秒</span>
                     </div>
                     <input id="slider-dwell-timer" type="range" min="0.1" max="3.0" step="0.1" value="1.5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
@@ -117,7 +123,7 @@
                         <select id="select-sound" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none text-sm">
                             <option value="sound-a" selected>電子音（ピコーン）</option>
                             <option value="sound-b">ファンファーレ</option>
-                            <option value="sound-none">なし</option>
+                            <option value="sound-none">音なし</option>
                         </select>
                     </div>
                 </div>
@@ -161,8 +167,12 @@
 
         <div class="absolute bottom-6 left-6 z-50">
             <button id="btn-gaze-toggle" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base">
-                <span id="gaze-status-icon">👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>
+                <span id="gaze-status-icon">👁️</span> 視線入力は【ON】です <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">Xキー</kbd>
             </button>
+        </div>
+
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 text-center text-xs text-slate-400 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800 pointer-events-none shadow-lg whitespace-nowrap">
+            ［1］キー：クリックまたはタップでタイマー実行、［2］キー：注視でタイマー実行、［3］キー：マウスオーバーでタイマー実行、［4］キー：マウスポインタがボタン内にある間マビーON
         </div>
 
         <div class="absolute bottom-6 right-6 z-50">
@@ -297,7 +307,7 @@
                     }
                 });
 
-                if (modeNum === 1) {
+                if (modeNum === 2) {
                     wrapperDwellTimer.style.opacity = "1";
                     sliderDwellTimer.disabled = false;
                 } else {
@@ -313,11 +323,13 @@
             document.getElementById('mode-btn-1').addEventListener('click', () => setMode(1));
             document.getElementById('mode-btn-2').addEventListener('click', () => setMode(2));
             document.getElementById('mode-btn-3').addEventListener('click', () => setMode(3));
+            document.getElementById('mode-btn-4').addEventListener('click', () => setMode(4));
 
             window.addEventListener('keydown', (e) => {
                 if (e.key === '1') setMode(1);
                 if (e.key === '2') setMode(2);
                 if (e.key === '3') setMode(3);
+                if (e.key === '4') setMode(4);
                 
                 if (e.key === 'ArrowLeft') {
                     let newVal = Math.max(1, timerSeconds - 1);
@@ -446,6 +458,7 @@
                 webgazer.showVideo(false);
                 webgazer.showFaceOverlay(false);
                 webgazer.showFaceFeedbackBox(false);
+                webgazer.showPredictionPoints(false); // デフォルトの赤ポッチを消す
 
                 // 視線座標更新時のイベントリスナーを設定
                 webgazer.setGazeListener((data, elapsedTime) => {
@@ -502,12 +515,44 @@
             // カメラ制御
             document.getElementById('btn-in-camera').addEventListener('click', async () => {
                 try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    let devices = await navigator.mediaDevices.enumerateDevices();
+                    if (devices.every(d => !d.label)) {
+                        try {
+                            const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            tempStream.getTracks().forEach(track => track.stop());
+                            devices = await navigator.mediaDevices.enumerateDevices();
+                        } catch (e) {}
+                    }
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                    let constraints = { video: { facingMode: "user" } };
-                    if (videoDevices.length > 1) {
-                        const frontCam = videoDevices.find(d => d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('built-in'));
-                        if (frontCam) constraints = { video: { deviceId: { exact: frontCam.deviceId } } };
+                    console.log("【インカメラ起動】検出されたビデオデバイス:", videoDevices.map((d,i) => `[${i}] ${d.label} (${d.deviceId.substring(0,8)}...)`));
+                    let constraints = { video: true };
+                    if (videoDevices.length > 0) {
+                        const externalKeywords = ['usb', 'logicool', 'logitech', 'logi', 'c920', 'c922', 'c270', 'brio', 'streamcam'];
+                        // 1. ラベルに内蔵カメラのキーワードが含まれるものを探す
+                        let frontCam = videoDevices.find(d => {
+                            const label = d.label.toLowerCase();
+                            return label && (
+                                   label.includes('front') || 
+                                   label.includes('built-in') || 
+                                   label.includes('integrated') || 
+                                   label.includes('internal') || 
+                                   label.includes('face')
+                            );
+                        });
+                        // 2. 見つからなければ、外付けカメラのキーワードを含まないものを探す
+                        if (!frontCam) {
+                            frontCam = videoDevices.find(d => {
+                                const label = d.label.toLowerCase();
+                                if (!label) return false;
+                                return !externalKeywords.some(kw => label.includes(kw));
+                            });
+                        }
+                        // 3. それでも見つからなければ、videoDevices[0] をフォールバック
+                        if (!frontCam) {
+                            frontCam = videoDevices[0];
+                        }
+                        console.log("【インカメラ起動】選択されたデバイス:", frontCam.label, frontCam.deviceId.substring(0,8));
+                        constraints = { video: { deviceId: { exact: frontCam.deviceId } } };
                     }
                     streamIn = await navigator.mediaDevices.getUserMedia(constraints);
                     videoIn.srcObject = streamIn;
@@ -525,12 +570,49 @@
 
             document.getElementById('btn-out-camera').addEventListener('click', async () => {
                 try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    let devices = await navigator.mediaDevices.enumerateDevices();
+                    if (devices.every(d => !d.label)) {
+                        try {
+                            const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            tempStream.getTracks().forEach(track => track.stop());
+                            devices = await navigator.mediaDevices.enumerateDevices();
+                        } catch (e) {}
+                    }
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                    let constraints = { video: { facingMode: "environment" } };
-                    if (videoDevices.length > 1) {
-                        const usbCam = videoDevices.find(d => d.label.toLowerCase().includes('usb') || d.label.toLowerCase().includes('external') || d.label.toLowerCase().includes('back'));
-                        if (usbCam) constraints = { video: { deviceId: { exact: usbCam.deviceId } } };
+                    console.log("【外付けカメラ起動】検出されたビデオデバイス:", videoDevices.map((d,i) => `[${i}] ${d.label} (${d.deviceId.substring(0,8)}...)`));
+                    let constraints = { video: true };
+                    if (videoDevices.length > 0) {
+                        let usbCam = null;
+                        const hasLabels = videoDevices.some(d => d.label);
+                        if (hasLabels) {
+                            usbCam = videoDevices.find(d => {
+                                const label = d.label.toLowerCase();
+                                return label && (
+                                       label.includes('usb') || 
+                                       label.includes('external') || 
+                                       label.includes('ext') || 
+                                       label.includes('logicool') ||
+                                       label.includes('logi') ||
+                                       label.includes('c920') ||
+                                       (!label.includes('front') && 
+                                        !label.includes('built-in') && 
+                                        !label.includes('integrated') && 
+                                        !label.includes('internal') && 
+                                        !label.includes('face'))
+                                );
+                            });
+                        }
+                        if (!usbCam) {
+                            if (videoDevices.length > 1) {
+                                usbCam = videoDevices[1];
+                            } else {
+                                usbCam = videoDevices[0];
+                            }
+                        }
+                        if (usbCam) {
+                            console.log("【外付けカメラ起動】選択されたデバイス:", usbCam.label, usbCam.deviceId.substring(0,8));
+                            constraints = { video: { deviceId: { exact: usbCam.deviceId } } };
+                        }
                     }
                     streamOut = await navigator.mediaDevices.getUserMedia(constraints);
                     videoOut.srcObject = streamOut;
@@ -540,6 +622,19 @@
                     document.getElementById('btn-out-camera').textContent = "外付けWebカメラ起動中";
                     document.getElementById('btn-out-camera').classList.replace('bg-slate-700', 'bg-emerald-600');
                 } catch (err) { alert("外付けWebカメラの起動に失敗しました。"); }
+            });
+
+            document.getElementById('btn-out-camera-stop').addEventListener('click', () => {
+                if (streamOut) {
+                    streamOut.getTracks().forEach(track => track.stop());
+                    streamOut = null;
+                }
+                videoOut.srcObject = null;
+                videoRun.srcObject = null;
+                videoRun.classList.add('hidden');
+                placeholderOut.classList.remove('hidden');
+                document.getElementById('btn-out-camera').textContent = "外付けWebカメラ（乾電池式のオモチャなどをボタンに映す目的）を起動";
+                document.getElementById('btn-out-camera').className = "w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-lg transition-all text-xs";
             });
 
             document.getElementById('btn-start').addEventListener('click', () => {
@@ -580,7 +675,7 @@
                 isGazeEnabled = !isGazeEnabled;
                 if (isGazeEnabled) {
                     btnGazeToggle.className = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 flex items-center gap-2 transition-all active:scale-95 text-base";
-                    btnGazeToggle.innerHTML = `<span>👁️</span> 視線入力: ON <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
+                    btnGazeToggle.innerHTML = `<span>👁️</span> 視線入力は【ON】です <kbd class="bg-emerald-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">Xキー</kbd>`;
                     
                     if (!scrRun.classList.contains('hidden')) {
                         document.getElementById('gaze-dot').style.display = 'block';
@@ -590,7 +685,7 @@
                     }
                 } else {
                     btnGazeToggle.className = "bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold px-5 py-3 rounded-xl shadow-lg border border-slate-600 flex items-center gap-2 transition-all active:scale-95 text-base";
-                    btnGazeToggle.innerHTML = `<span>❌</span> 視線入力: OFF <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">X</kbd>`;
+                    btnGazeToggle.innerHTML = `<span>❌</span> 視線入力は【OFF】です <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-xs ml-1 font-mono">Xキー</kbd>`;
                     document.getElementById('gaze-dot').style.display = 'none';
                     if (isWebGazerInitialized) {
                         webgazer.pause();
@@ -680,7 +775,7 @@
                 targetText.classList.add('text-amber-300');
                 targetIcon.textContent = "⚡🚀";
 
-                if (appMode === 1 || appMode === 2) {
+                if (appMode === 1 || appMode === 2 || appMode === 3) {
                     let timeLeft = timerSeconds;
                     targetText.textContent = `実行中 ${timeLeft} 秒`;
                     countdownInterval = setInterval(() => {
@@ -689,7 +784,7 @@
                         else targetText.textContent = `実行中 ${timeLeft} 秒`;
                     }, 1000);
                     outputTimeout = setTimeout(() => { stopMaBeeeOutput(); }, timerSeconds * 1000);
-                } else if (appMode === 3) {
+                } else if (appMode === 4) {
                     targetText.textContent = "実行中";
                 }
             }
@@ -713,7 +808,7 @@
             }
 
             function handleTriggerInput() {
-                if (isOutputActive && (appMode === 1 || appMode === 2)) return;
+                if (isOutputActive && (appMode === 1 || appMode === 2 || appMode === 3)) return;
                 startMaBeeeOutput();
             }
 
@@ -728,7 +823,7 @@
                 if (isDragging) return;
                 if (offDelayTimeout) { clearTimeout(offDelayTimeout); offDelayTimeout = null; }
 
-                if (appMode === 1) {
+                if (appMode === 2) {
                     if (isOutputActive) return;
                     resetDwellTracking();
                     dwellIndicator.style.transitionDuration = `${dwellTimeMs}ms`;
@@ -736,16 +831,16 @@
                     dwellTimeout = setTimeout(() => {
                         handleTriggerInput(); resetDwellTracking();
                     }, dwellTimeMs);
-                } else if (appMode === 2) {
-                    handleTriggerInput();
                 } else if (appMode === 3) {
+                    handleTriggerInput();
+                } else if (appMode === 4) {
                     startMaBeeeOutput();
                 }
             }
 
             function handleTargetLeave() {
-                if (appMode === 1) resetDwellTracking();
-                if (appMode === 3 && isOutputActive) {
+                if (appMode === 2) resetDwellTracking();
+                if (appMode === 4 && isOutputActive) {
                     offDelayTimeout = setTimeout(() => {
                         stopMaBeeeOutput(); offDelayTimeout = null;
                     }, 400); 
