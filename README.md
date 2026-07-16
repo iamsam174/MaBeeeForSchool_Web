@@ -4,13 +4,13 @@
 
 PC・タブレット端末・スマートフォンからURL `https://iamsam174.github.io/MaBeeeForSchool_Web/` にアクセスするだけですぐに利用できます。
 
-このアプリはWeb上からBluetoothを操作する技術（Web Bluetooth API）を使用していて、現在 Google Chrome と Microsoft Edge（および一部のAndroidブラウザ）でのみサポートされています。 
+このアプリはWeb上からBluetoothを操作する技術（Web Bluetooth API）を使用していて、現在 Google Chrome と Microsoft Edgeでのみサポートされています。 
 
 Safari や Firefox では動作しませんので、ご注意ください。
 
 ⚠️ Appleのセキュリティ方針により、iPad (iPadOS) / iPhone (iOS)のSafari や Chrome ではBluetooth通信機能（Web Bluetooth）がブロックされている関係で、このアプリ単独では動きません。
 
-⚠️ iPad / iPhone で動かしたい場合は「Bluefy」や「WebBLE」といったWeb Bluetooth専用のブラウザアプリでお使いください。
+⚠️ iPad / iPhone で動かしたい場合は「Bluefy `https://apps.apple.com/jp/app/bluefy-web-ble-browser/id1492822055`」や「WebBLE `https://apps.apple.com/jp/app/webble/id1193531073` 」といったWeb Bluetooth専用のブラウザアプリでお使いください。
 
 ---
 
@@ -33,7 +33,7 @@ Safari や Firefox では動作しませんので、ご注意ください。
 - **ハードウェア:** 
   - Bluetooth機能（BLE）を搭載したICT機器（WindowsPC、Mac、Android端末、Chromebook）
   - 単４乾電池を入れたMaBeee for School（※青色のMaBeeeとは通信仕様が異なります）および乾電池で作動するオモチャなど
-  - Webカメラ（乾電池式オモチャなどの対象物をボタンに映し出したい時に使用します。使用するICT機器によってはWebカメラの映像が画面上に映らないことがあります）
+  - USB外付けWebカメラ（乾電池式オモチャなどの対象物をボタンに映し出したい時に使用します。スマートフォンやタブレット端末など、機種によっては外付けWebカメラの映像をボタン背景に映し出す機能が利用できないことがあります。その場合は内蔵カメラを仕様するかPC環境での利用をオススメします。）
 
 ## ⚙️ ペアリングと操作手順
 
