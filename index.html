@@ -51,7 +51,7 @@
                     </button>
                 </div>
 
-                <!-- 2. 動作モード選択 (カメラ設定より上に移動) -->
+                <!-- 2. 動作モード選択 -->
                 <div class="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700">
                     <h2 class="text-lg md:text-xl font-bold text-slate-300 mb-4">［動作モードの選択］ <span class="text-sm md:text-base text-slate-400 font-normal block sm:inline mt-1 sm:mt-0">（キーボード［1］［2］［3］）</span></h2>
                     <div class="grid grid-cols-1 gap-3 md:gap-4">
@@ -86,7 +86,7 @@
                     </div>
                 </div>
 
-                <!-- 4. モバイル専用カメラプレビュー (スマホ等でのみスクロールエリアに表示) -->
+                <!-- 4. モバイル専用カメラプレビュー -->
                 <div class="md:hidden flex-none bg-slate-950 rounded-2xl border-2 border-slate-700 overflow-hidden relative flex items-center justify-center min-h-[160px]">
                     <video id="webcam-out-mobile" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
                     <div id="placeholder-out-mobile" class="text-center text-slate-500 p-4 z-10 flex flex-col items-center">
@@ -126,10 +126,10 @@
                 </div>
             </div>
 
-            <!-- 右側：固定エリア (スマホ時は太い白線で区切られ最下部に配置) -->
+            <!-- 右側：固定エリア -->
             <div class="w-full md:w-1/2 lg:w-5/12 flex-none md:flex-1 flex flex-col gap-4 md:gap-6 border-t-4 border-white md:border-t-0 pt-4 md:pt-0 min-h-0">
                 
-                <!-- PC専用カメラプレビュー (PC等でのみ右側に大きく表示) -->
+                <!-- PC専用カメラプレビュー -->
                 <div class="hidden md:flex flex-1 bg-slate-950 rounded-2xl border-2 border-slate-700 overflow-hidden relative items-center justify-center min-h-0">
                     <video id="webcam-out-pc" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
                     <div id="placeholder-out-pc" class="text-center text-slate-500 p-4 z-10 flex flex-col items-center">
@@ -161,7 +161,6 @@
             ［1］キー：クリックまたはタップでタイマー実行、［2］キー：マウスオーバーでタイマー実行、［3］キー：マウスポインタがボタン内にある間マビーON
         </div>
 
-        <!-- ［設定に戻る］ボタンを右上に移動 -->
         <div class="absolute top-6 right-6 z-50">
             <button id="btn-back" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-lg border border-slate-700 transition-all active:scale-95 text-base md:text-xl">
                 ↩ 設定に戻る
@@ -221,7 +220,10 @@
             let countdownInterval = null;
             let dwellTimeout = null;
             let offDelayTimeout = null;
-            let heartbeatInterval = null;
+            
+            // 【変更点】Android渋滞回避のためのフラグ管理に変更
+            let heartbeatActive = false;
+            let isBleWriting = false;
 
             let streamOut = null;
             let videoDevices = [];
@@ -256,7 +258,6 @@
             const btnCameraSwitch = document.getElementById('btn-out-camera-switch');
             const btnCameraStop = document.getElementById('btn-out-camera-stop');
             
-            // モバイル用とPC用で2つのプレビュー要素を取得
             const videoOutMobile = document.getElementById('webcam-out-mobile');
             const placeholderOutMobile = document.getElementById('placeholder-out-mobile');
             const videoOutPc = document.getElementById('webcam-out-pc');
@@ -406,7 +407,6 @@
 
             async function startCamera(deviceId = null) {
                 try {
-                    // 古いストリームがあれば停止
                     if (streamOut) {
                         streamOut.getTracks().forEach(t => t.stop());
                         streamOut = null;
@@ -415,7 +415,6 @@
                     const constraints = deviceId ? { video: { deviceId: { exact: deviceId } } } : { video: true };
                     streamOut = await navigator.mediaDevices.getUserMedia(constraints);
                     
-                    // モバイルとPCの両方のビデオ要素にストリームを渡す
                     if (videoOutMobile) videoOutMobile.srcObject = streamOut;
                     if (videoOutPc) videoOutPc.srcObject = streamOut;
                     videoRun.srcObject = streamOut;
@@ -428,11 +427,9 @@
                     btnCameraSwitch.classList.remove('hidden');
                     btnCameraStop.classList.remove('hidden');
                     
-                    // 起動成功後にデバイス一覧を取得して切替用配列を更新
                     const devices = await navigator.mediaDevices.enumerateDevices();
                     videoDevices = devices.filter(d => d.kind === 'videoinput');
                     
-                    // 現在のインデックスを特定
                     if (deviceId) {
                         currentCameraIndex = videoDevices.findIndex(d => d.deviceId === deviceId);
                     } else {
@@ -440,7 +437,6 @@
                     }
                     if (currentCameraIndex === -1) currentCameraIndex = 0;
                     
-                    // カメラが1台以下の場合は切替ボタンを無効化
                     if (videoDevices.length <= 1) {
                         btnCameraSwitch.disabled = true;
                         btnCameraSwitch.classList.replace('bg-slate-700', 'bg-slate-800');
@@ -458,20 +454,17 @@
                     if (err.name === 'NotAllowedError') {
                         alert("カメラへのアクセスが拒否されました。\nブラウザの許可ダイアログで「許可」を選択してください。");
                     } else {
-                        alert("カメラの起動に失敗しました。\n他のアプリがカメラを使用していないか確認してください。\n\n詳細: " + err.message);
+                        alert("カメラの起動に失敗しました。\n詳細: " + err.message);
                     }
                 }
             }
 
-            btnCamera.addEventListener('click', () => {
-                startCamera(null);
-            });
+            btnCamera.addEventListener('click', () => startCamera(null));
             
             btnCameraSwitch.addEventListener('click', () => {
                 if (videoDevices.length > 1) {
                     currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
-                    const nextDeviceId = videoDevices[currentCameraIndex].deviceId;
-                    startCamera(nextDeviceId);
+                    startCamera(videoDevices[currentCameraIndex].deviceId);
                 }
             });
             
@@ -492,7 +485,6 @@
                 btnCameraSwitch.classList.add('hidden');
                 btnCameraStop.classList.add('hidden');
             });
-
 
             document.getElementById('btn-start').addEventListener('click', () => {
                 scrLauncher.classList.add('hidden');
@@ -550,32 +542,70 @@
                 }
             }
 
+            // 【重要変更箇所】Androidのパンク対策を施したモーター制御
             function controlMaBeeeMotor(turnOn) {
                 if (!motorCharacteristic) return;
 
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                    heartbeatInterval = null;
-                }
-
                 if (turnOn) {
+                    heartbeatActive = true;
                     const onBytes = new Uint8Array([0x01, 0x64, 0x00, 0x00, 0x00]);
-                    heartbeatInterval = setInterval(async () => {
-                        try {
-                            await writeToChar(motorCharacteristic, onBytes);
-                        } catch (err) {
-                            console.error("Motor ON write failed:", err);
+
+                    const heartbeatLoop = async () => {
+                        if (!heartbeatActive) return;
+
+                        // 前の書き込みがまだ終わっていない場合はスキップ（渋滞回避）
+                        if (!isBleWriting) {
+                            isBleWriting = true;
+                            try {
+                                await writeToChar(motorCharacteristic, onBytes);
+                            } catch (err) {
+                                console.error("Motor ON write failed:", err);
+                            } finally {
+                                isBleWriting = false;
+                            }
                         }
-                    }, 50);
+                        
+                        // 次の送信を50ms後にスケジュール
+                        if (heartbeatActive) {
+                            setTimeout(heartbeatLoop, 50);
+                        }
+                    };
+                    
+                    heartbeatLoop();
+
                 } else {
+                    heartbeatActive = false; // ONの連続ループを停止
                     const offBytes = new Uint8Array([0x01, 0x00, 0x00, 0x00, 0x00]);
+                    
                     setTimeout(async () => {
+                        // 前のON送信が処理中の場合は、最大100msほど待機する
+                        let retries = 5;
+                        while (isBleWriting && retries > 0) {
+                            await new Promise(r => setTimeout(r, 20));
+                            retries--;
+                        }
+                        
+                        isBleWriting = true;
                         try {
                             await writeToChar(motorCharacteristic, offBytes);
                         } catch (err) {
-                            console.error("Motor OFF write failed:", err);
+                            console.error("Motor OFF write 1 failed:", err);
+                        } finally {
+                            isBleWriting = false;
                         }
-                    }, 70);
+
+                        // 【Android対策】念のため100ms後にもう一度ストップ信号を送る
+                        setTimeout(async () => {
+                            if (heartbeatActive) return; // すでに次のONが始まっていればキャンセル
+                            isBleWriting = true;
+                            try {
+                                await writeToChar(motorCharacteristic, offBytes);
+                            } catch (err) {} finally {
+                                isBleWriting = false;
+                            }
+                        }, 100);
+
+                    }, 50); // 最後のONとぶつからないよう少し間隔を空ける
                 }
             }
 
@@ -655,13 +685,8 @@
                 }
             }
 
-            mabeeeTarget.addEventListener('pointerenter', () => {
-                handleTargetEnter();
-            });
-
-            mabeeeTarget.addEventListener('pointerleave', () => {
-                handleTargetLeave();
-            });
+            mabeeeTarget.addEventListener('pointerenter', () => handleTargetEnter());
+            mabeeeTarget.addEventListener('pointerleave', () => handleTargetLeave());
         });
     </script>
 </body>
